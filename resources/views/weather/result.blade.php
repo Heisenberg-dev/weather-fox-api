@@ -4,48 +4,70 @@
 <div class="container mx-auto mt-10">
     @if(isset($error))
         <p class="text-red-900 text-center">{{ $error }}</p>
-        @elseif(isset($weather['main']))
-        <!-- current weather-info -->
-        <div id="weather-info" class="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto transition-opacity duration-500 opacity-100">
-            <h2 class="text-3xl font-semibold mb-4">The weather in {{ $city }}</h2>
-            <p><strong>Temperature:</strong> {{ $weather['main']['temp'] }}°C</p>
-            <p><strong>Feels like:</strong> {{ $weather['main']['feels_like'] }}°C</p>
-            <p><strong>Humidity:</strong> {{ $weather['main']['humidity'] }}%</p>
-            <p><strong>Wind speed:</strong> {{ $weather['wind']['speed'] }} m/s</p>
-            <p><strong>Description:</strong> {{ $weather['weather'][0]['description'] }}</p>
-        </div>
     @else
-    
-        <!-- 5-day Forecast -->
-        <h3 class="text-2xl font-semibold text-center mt-8 mb-4">5-day weather forecast for
-{{$city}}</h3>
+        <!-- Current Weather Info -->
+        <div id="weather-info" class="bg-white shadow-md rounded-lg p-6 max-w-max mx-auto transition-opacity duration-500 opacity-100">
+            <h2 class="text-3xl font-semibold mb-4">5-дневный прогноз для {{ $city }}</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            @foreach ($forecast as $day => $items)
-                @php
-                    $dayForecast = $items->first(); // Get the first forecast of the day as a summary
-                @endphp
-                <div class="bg-blue-100 rounded-lg shadow-lg p-4">
-                    <h4 class="text-lg font-bold">{{ \Carbon\Carbon::parse($day)->format('d M Y') }}</h4>
-                    <p><strong>Temperature:</strong> {{ $dayForecast['main']['temp'] }}°C</p>
-                    <p><strong>Description:</strong> {{ $dayForecast['weather'][0]['description'] }}</p>
-                    <p><strong>Humidity:</strong> {{ $dayForecast['main']['humidity'] }}%</p>
-                    <p><strong>Wind speed:</strong> {{ $dayForecast['wind']['speed'] }} m/s</p>
+            <div class="flex flex-wrap justify-between space-x-4">
+            
+            <!-- Loop through the daily forecast data -->
+            @foreach($weather as $forecast)
+            <div class="w-full md:w-1/5 bg-white p-4 rounded-lg shadow-md mb-4">
+                    <h3 class="text-xl font-bold">{{ \Carbon\Carbon::parse($forecast['dt_txt'])->format('d M Y H:i') }}</h3>
+                    <p><strong>Температура:</strong> {{ $forecast['main']['temp'] }}°C</p>
+                    <p><strong>Ощущается как:</strong> {{ $forecast['main']['feels_like'] }}°C</p>
+                    <p><strong>Влажность:</strong> {{ $forecast['main']['humidity'] }}%</p>
+                    <p><strong>Условия:</strong> {{ $forecast['weather'][0]['description'] }}</p>
+                    <p><strong>Скорость ветра:</strong> {{ $forecast['wind']['speed'] }} м/с</p>
                 </div>
-
-           
             @endforeach
+            </div>
         </div>
-
     @endif
 
-
-    <div class="text-center mt-6">
-     
-        <a href="{{ route('weather.index') }}" id="back-button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"><strong>Check other city</strong></a>
-    </div>
+  
 </div>
 
 
+        <!-- Air Quality Info -->
+        <div id="air-quality-info" class="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto mt-6 transition-opacity duration-500 opacity-100">
+            <h2 class="text-3xl font-semibold mb-4">Качество воздуха в {{ $city }}</h2>
 
+            @php
+                $aqi = $airQuality['list'][0]['main']['aqi'];  // Air Quality Index
+                $aqiText = '';
+
+                switch ($aqi) {
+                    case 1:
+                        $aqiText = 'Очень хорошее';
+                        break;
+                    case 2:
+                        $aqiText = 'Хорошее';
+                        break;
+                    case 3:
+                        $aqiText = 'Умеренное';
+                        break;
+                    case 4:
+                        $aqiText = 'Плохое';
+                        break;
+                    case 5:
+                        $aqiText = 'Очень плохое';
+                        break;
+                }
+            @endphp
+
+            <p><strong>Индекс качества воздуха (AQI):</strong> {{ $aqi }} ({{ $aqiText }})</p>
+            <p><strong>PM2.5:</strong> {{ $airQuality['list'][0]['components']['pm2_5'] }} μg/m³</p>
+            <p><strong>PM10:</strong> {{ $airQuality['list'][0]['components']['pm10'] }} μg/m³</p>
+            <p><strong>CO:</strong> {{ $airQuality['list'][0]['components']['co'] }} μg/m³</p>
+            <p><strong>NO:</strong> {{ $airQuality['list'][0]['components']['no'] }} μg/m³</p>
+            <p><strong>NO2:</strong> {{ $airQuality['list'][0]['components']['no2'] }} μg/m³</p>
+        </div>
+
+
+    <div class="text-center mt-6">
+        <a href="{{ route('weather.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Проверить другой город</a>
+    </div>
+</div>
 @endsection
